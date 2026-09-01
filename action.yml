@@ -1,0 +1,84 @@
+name: 'Runner GUI Probe'
+description: >-
+  Download and launch a GUI app on a runner, best-effort script an
+  interaction with it, and capture before/after screenshots as an artifact.
+  The artifact is the deliverable; a successful interaction is a bonus, not
+  a requirement.
+author: qte77
+
+inputs:
+  download-url:
+    description: 'URL to download the installer/app archive from'
+    required: true
+  install-type:
+    description: >-
+      Installer type. macOS: dmg | zip | pkg. Windows: exe | zip.
+      Linux: appimage | deb | tar.
+    required: false
+    default: 'dmg'
+  launch-target:
+    description: >-
+      Name or relative path of the executable to launch after install.
+      Ignored for macOS dmg installs (the .app bundle name is discovered
+      automatically from the mounted volume).
+    required: false
+    default: ''
+  interact-script:
+    description: >-
+      Optional best-effort interaction script: AppleScript on macOS,
+      PowerShell on Windows, a shell one-liner (xdotool etc.) on Linux.
+      Allowed to fail — failure does not fail the action.
+    required: false
+    default: ''
+  settle-seconds:
+    description: 'Seconds to wait after launch before the first screenshot'
+    required: false
+    default: '5'
+
+runs:
+  using: composite
+  steps:
+    - name: Run probe (macOS)
+      id: macos
+      if: runner.os == 'macOS'
+      shell: bash
+      run: bash "${{ github.action_path }}/scripts/macos.sh"
+      env:
+        DOWNLOAD_URL: ${{ inputs.download-url }}
+        INSTALL_TYPE: ${{ inputs.install-type }}
+        LAUNCH_TARGET: ${{ inputs.launch-target }}
+        INTERACT_SCRIPT: ${{ inputs.interact-script }}
+        SETTLE_SECONDS: ${{ inputs.settle-seconds }}
+
+    - name: Run probe (Windows) -- UNVERIFIED, see README
+      id: windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: '& "${{ github.action_path }}/scripts/windows.ps1"'
+      env:
+        DOWNLOAD_URL: ${{ inputs.download-url }}
+        INSTALL_TYPE: ${{ inputs.install-type }}
+        LAUNCH_TARGET: ${{ inputs.launch-target }}
+        INTERACT_SCRIPT: ${{ inputs.interact-script }}
+        SETTLE_SECONDS: ${{ inputs.settle-seconds }}
+
+    - name: Run probe (Linux) -- UNVERIFIED, see README
+      id: linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: bash "${{ github.action_path }}/scripts/linux.sh"
+      env:
+        DOWNLOAD_URL: ${{ inputs.download-url }}
+        INSTALL_TYPE: ${{ inputs.install-type }}
+        LAUNCH_TARGET: ${{ inputs.launch-target }}
+        INTERACT_SCRIPT: ${{ inputs.interact-script }}
+        SETTLE_SECONDS: ${{ inputs.settle-seconds }}
+
+    - name: Upload screenshots
+      uses: actions/upload-artifact@v4
+      with:
+        name: gui-probe-screenshots-${{ runner.os }}
+        path: |
+          probe-before.png
+          probe-after.png
+        if-no-files-found: warn
