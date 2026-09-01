@@ -1,0 +1,26 @@
+name: example
+
+# End-to-end usage example (macOS -- the verified path). Downloads a real,
+# small, publicly-distributed notarized macOS app as a demo target; any
+# legitimate installer URL works the same way.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve a demo download URL
+        id: demo
+        run: |
+          url=$(curl -fsSL https://yappy.biz/api/v1/releases/latest | python3 -c "import sys,json; print(json.load(sys.stdin)['download_url'])")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - uses: ./
+        with:
+          download-url: ${{ steps.demo.outputs.url }}
+          install-type: dmg
+          settle-seconds: '5'
