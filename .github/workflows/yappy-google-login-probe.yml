@@ -39,7 +39,6 @@ jobs:
           interact-script: |
             tell application "System Events"
               tell process "Yappy"
-                click button "Sign in with Google" of window 1
+                return entire contents of window 1
               end tell
             end tell
-            delay 3
