@@ -37,7 +37,29 @@ run against your actual target and fix what breaks.
 ```
 
 See [`.github/workflows/example.yml`](.github/workflows/example.yml) for a
-working end-to-end example (macOS).
+working end-to-end example (macOS). It already installs and launches
+[Yappy](https://yappy.biz/), a macOS dictation app, as its verified demo
+target. Yappy publishes no Terms of Service; its only agent policy
+([`agents.md`](https://yappy.biz/agents.md)) covers its website API, not the
+desktop app.
+
+**Confirmed by running `example.yml`'s screenshots**, not by Yappy's docs
+(which claim otherwise): Yappy v0.4.22's real first launch is a mandatory
+"Sign in with Google" gate, no skip option. A third-party app's UI can't be
+known in advance — trust a screenshot from a real run over marketing copy.
+
+[`.github/workflows/yappy-google-login-probe.yml`](.github/workflows/yappy-google-login-probe.yml)
+is the login step, built incrementally: it currently only clicks "Sign in
+with Google" and screenshots what appears next (no credentials involved),
+to learn whether that's an embedded webview, a separate window, or the
+system browser before scripting any credential entry against it.
+**UNVERIFIED** — not yet run.
+
+[`.github/workflows/yappy-dictation-probe.yml`](.github/workflows/yappy-dictation-probe.yml)
+covers the post-login dictation step — virtual audio loopback, synthesized
+speech, Yappy's documented hands-free double-tap hotkey — but its
+account-free premise turned out to be wrong (see above); it needs the login
+flow folded in ahead of it before it can run meaningfully. **UNVERIFIED**.
 
 ## Inputs
 

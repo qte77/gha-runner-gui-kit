@@ -16,7 +16,8 @@ jobs:
       - name: Resolve a demo download URL
         id: demo
         run: |
-          url=$(curl -fsSL https://yappy.biz/api/v1/releases/latest | python3 -c "import sys,json; print(json.load(sys.stdin)['download_url'])")
+          url=$(curl -fsSL -H "User-Agent: gha-runner-gui-kit (+https://github.com/qte77/gha-runner-gui-kit)" \
+            https://yappy.biz/api/v1/releases/latest | python3 -c "import sys,json; print(json.load(sys.stdin)['download_url'])")
           echo "url=$url" >> "$GITHUB_OUTPUT"
 
       - uses: ./

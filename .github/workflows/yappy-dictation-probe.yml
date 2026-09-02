@@ -1,0 +1,88 @@
+name: yappy-dictation-probe
+
+# CORRECTION (see yappy-google-login-probe.yml): Yappy's real first-launch
+# screen is a mandatory "Sign in with Google" gate -- yappy.biz's docs
+# claiming no account is needed do not match the shipped app (v0.4.22).
+# This workflow's account-free premise is therefore WRONG as written: it
+# will just sit on the sign-in screen and the double-tap below will fire
+# into that screen, not into a dictation-ready app. Do not run until the
+# login flow (yappy-google-login-probe.yml) is scripted and folded in
+# ahead of these steps.
+#
+# Kept for its still-valid parts: the audio-loopback setup and the
+# hands-free double-tap trigger mechanics below (yappy.biz/docs/dictation.md,
+# yappy.biz/docs/configuration.md) are accurate regardless of login --
+# double-tap Right Option locks recording on, double-tap again stops it.
+# Using double-tap instead of a sustained hold is deliberate: System
+# Events can press-and-release a key code validly, but has no supported
+# way to hold a bare modifier down for a duration.
+#
+# UNVERIFIED -- has not been run in a real workflow execution yet.
+# Expected run-1 outcome even if everything above is exactly right:
+# Yappy launches, the double-tap fires, but the transcription is empty --
+# because macOS TCC microphone consent has no dialog to click in headless
+# CI, and Accessibility permission for keystroke injection may not be
+# pre-granted on macos-14 runners either. Treat a blank/no transcription
+# on the first run as "permissions gate", not "routing bug", until both
+# are confirmed granted.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set Yappy's dictation config explicitly (matches documented defaults)
+        run: |
+          mkdir -p ~/.yappy
+          cat > ~/.yappy/config.json <<'JSON'
+          {
+            "pushToTalk": "rightOption",
+            "handsFreeEnabled": true
+          }
+          JSON
+
+      - name: Install virtual audio loopback + device switcher
+        run: brew install --cask blackhole-2ch && brew install switchaudio-osx
+
+      - name: Route system audio through the loopback
+        run: |
+          sudo killall coreaudiod || true
+          sleep 2
+          SwitchAudioSource -t input -s "BlackHole 2ch"
+          SwitchAudioSource -t output -s "BlackHole 2ch"
+
+      - name: Synthesize real speech to dictate
+        run: say "the quick brown fox jumps over the lazy dog" -o /tmp/yappy-speech.aiff
+
+      - name: Resolve latest Yappy DMG URL
+        id: yappy
+        run: |
+          url=$(curl -fsSL -H "User-Agent: gha-runner-gui-kit (+https://github.com/qte77/gha-runner-gui-kit)" \
+            https://yappy.biz/api/v1/releases/latest | python3 -c "import sys,json; print(json.load(sys.stdin)['download_url'])")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - uses: ./
+        with:
+          download-url: ${{ steps.yappy.outputs.url }}
+          install-type: dmg
+          settle-seconds: '8'
+          interact-script: |
+            -- double-tap Right Option (key code 61) to lock recording on
+            tell application "System Events"
+              key code 61
+              delay 0.15
+              key code 61
+            end tell
+            delay 0.3
+            do shell script "afplay /tmp/yappy-speech.aiff"
+            delay 0.5
+            -- double-tap again to stop recording
+            tell application "System Events"
+              key code 61
+              delay 0.15
+              key code 61
+            end tell

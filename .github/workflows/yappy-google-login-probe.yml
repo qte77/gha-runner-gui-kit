@@ -1,0 +1,45 @@
+name: yappy-google-login-probe
+
+# Phase B, step 1: click "Sign in with Google" and screenshot what appears.
+# example.yml's run showed Yappy's real first-launch screen is a mandatory
+# Google sign-in gate (contradicts yappy.biz's own docs, which claim no
+# account is needed -- direct observation wins). Before typing any real
+# credentials, this finds out what the post-click UI actually is: an
+# embedded webview inside Yappy, a separate native window, or the system
+# default browser -- that answer determines what process the next script
+# has to target. No credentials involved in this step.
+#
+# UNVERIFIED -- has not been run yet. The click itself depends on Yappy
+# exposing the button through the Accessibility tree with this exact
+# label, and on Accessibility permission for UI scripting being granted
+# to whatever process runs osascript on this runner (separate from, but
+# similar to, the mic/Accessibility caveat in yappy-dictation-probe.yml).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve latest Yappy DMG URL
+        id: yappy
+        run: |
+          url=$(curl -fsSL -H "User-Agent: gha-runner-gui-kit (+https://github.com/qte77/gha-runner-gui-kit)" \
+            https://yappy.biz/api/v1/releases/latest | python3 -c "import sys,json; print(json.load(sys.stdin)['download_url'])")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - uses: ./
+        with:
+          download-url: ${{ steps.yappy.outputs.url }}
+          install-type: dmg
+          settle-seconds: '8'
+          interact-script: |
+            tell application "System Events"
+              tell process "Yappy"
+                click button "Sign in with Google" of window 1
+              end tell
+            end tell
+            delay 3
