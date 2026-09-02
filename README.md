@@ -51,13 +51,18 @@ known in advance — trust a screenshot from a real run over marketing copy.
 [`.github/workflows/yappy-google-login-probe.yml`](.github/workflows/yappy-google-login-probe.yml)
 is the login step. **Clicking "Sign in with Google" is confirmed working**
 (the button has no accessible name — `button 1 of window 1`, not
-`button "Sign in with Google"`). **Past the click is currently blocked**:
-Yappy opens an embedded WebKit view for the OAuth flow rather than the
-system browser, but no window or menu-bar item ever appears afterward on
-a GitHub-hosted macOS runner, across delays up to ~9s — see the file
-header for the full evidence and two competing hypotheses (Google
-rejecting the embedded-webview auth attempt vs. a WebKit-in-CI rendering
-issue). No credentials have been typed anywhere in this process yet.
+`button "Sign in with Google"`). **Past the click is likely not
+automatable on GitHub-hosted macOS runners at all**: Yappy's embedded
+WebKit auth view finishes loading successfully then goes invisible ~6-7s
+later with no error logged; a tight poll ruled out "hides too fast to
+catch"; the runner's own system log shows `RunningBoard` process-role
+messages consistent with this session type never promoting the resulting
+window to visible. See the file header for full evidence. If Google login
+needs to happen for real, the remaining options are a self-hosted runner
+(a real, normally-logged-in Mac where a human signs in once and the
+session persists) or capturing Yappy's post-login persisted state
+elsewhere and restoring it into each run — neither attempted. No
+credentials have been typed anywhere in this process.
 
 [`.github/workflows/yappy-dictation-probe.yml`](.github/workflows/yappy-dictation-probe.yml)
 covers the post-login dictation step — virtual audio loopback, synthesized

@@ -21,15 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   trigger). **Unverified**, and its account-free premise is now known wrong
   — see file header.
 - `.github/workflows/yappy-google-login-probe.yml`: step 1 of scripting
-  Yappy's mandatory Google sign-in gate. Run for real (9 dispatches): the
-  click is confirmed working (`button 1 of window 1`, no accessible name);
-  what happens after is confirmed **blocked** — Yappy opens an embedded
-  WebKit view for the OAuth flow, and Yappy's own unified log shows both
-  resulting webviews finish loading successfully before going invisible
-  ~6-7s later with no error, denial, or rejection logged anywhere. No
-  window or menu-bar item ever appears on a GitHub-hosted macOS runner.
-  No credentials typed anywhere. See file header for full evidence and
-  open hypotheses.
+  Yappy's mandatory Google sign-in gate. Run for real (10 dispatches): the
+  click is confirmed working (`button 1 of window 1`, no accessible name).
+  Past the click is **likely not automatable on GitHub-hosted macOS
+  runners specifically** — Yappy's embedded-WebKit auth webviews finish
+  loading successfully then go invisible ~6-7s later with nothing logged
+  as an error; a tight 6s poll ruled out "hides too fast to catch"; no
+  crash report exists; the runner's own unified log shows RunningBoard
+  process-role messages (WindowServer in role `Background`) consistent
+  with this session type never promoting the resulting modal/sheet window
+  to visible. No credentials typed anywhere. See file header for full
+  evidence and the two remaining options (self-hosted runner, or capture
+  + restore Yappy's post-login persisted state).
 - `.env.example`: template for local secrets (`GMAIL_PW`), values never
   committed.
 - `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `LICENSE` (Apache-2.0).
