@@ -21,8 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   trigger). **Unverified**, and its account-free premise is now known wrong
   — see file header.
 - `.github/workflows/yappy-google-login-probe.yml`: step 1 of scripting
-  Yappy's mandatory Google sign-in gate — clicks "Sign in with Google" and
-  screenshots the result, no credentials yet. **Unverified** — not yet run.
+  Yappy's mandatory Google sign-in gate. Run for real (11 dispatches): the
+  click is confirmed working (`button 1 of window 1`, no accessible name);
+  what happens after is confirmed **blocked** — Yappy opens an embedded
+  WebKit view for the OAuth flow, but no window or menu-bar item ever
+  appears on a GitHub-hosted macOS runner. No credentials typed anywhere.
+  See file header for full evidence and open hypotheses.
 - `.env.example`: template for local secrets (`GMAIL_PW`), values never
   committed.
 - `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `LICENSE` (Apache-2.0).

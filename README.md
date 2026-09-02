@@ -49,11 +49,15 @@ desktop app.
 known in advance — trust a screenshot from a real run over marketing copy.
 
 [`.github/workflows/yappy-google-login-probe.yml`](.github/workflows/yappy-google-login-probe.yml)
-is the login step, built incrementally: it currently only clicks "Sign in
-with Google" and screenshots what appears next (no credentials involved),
-to learn whether that's an embedded webview, a separate window, or the
-system browser before scripting any credential entry against it.
-**UNVERIFIED** — not yet run.
+is the login step. **Clicking "Sign in with Google" is confirmed working**
+(the button has no accessible name — `button 1 of window 1`, not
+`button "Sign in with Google"`). **Past the click is currently blocked**:
+Yappy opens an embedded WebKit view for the OAuth flow rather than the
+system browser, but no window or menu-bar item ever appears afterward on
+a GitHub-hosted macOS runner, across delays up to ~9s — see the file
+header for the full evidence and two competing hypotheses (Google
+rejecting the embedded-webview auth attempt vs. a WebKit-in-CI rendering
+issue). No credentials have been typed anywhere in this process yet.
 
 [`.github/workflows/yappy-dictation-probe.yml`](.github/workflows/yappy-dictation-probe.yml)
 covers the post-login dictation step — virtual audio loopback, synthesized
