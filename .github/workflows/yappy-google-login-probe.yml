@@ -51,9 +51,29 @@ name: yappy-google-login-probe
 # this repo has no macOS hardware outside GitHub-hosted runners to build
 # or verify either against. No credentials have been typed anywhere in
 # this process. Also worth doing regardless of CI: report this to Yappy's
-# developer -- Apple Developer Forum threads show ASWebAuthenticationSession
-# auth windows failing silently even outside CI, suggesting this may be a
-# Yappy-side bug independent of the runner environment.
+# developer.
+#
+# Second research pass found closer prior art than the initial
+# ASWebAuthenticationSession forum threads: Google's actual
+# embedded-webview rejection is NOT silent -- it serves a visible "this
+# user-agent is not permitted" error page
+# (https://cnr.sh/posts/2021-10-11-google-oauth-wkwebview/), which argues
+# against Google-side blocking as the explanation here, since a rejection
+# would still require the window to become visible to show it. Closer
+# matches: Auth0 and Jamf community threads describe native macOS
+# WKWebView-hosted login windows that "never appear" at all, no error, on
+# real non-CI Macs too
+# (https://community.auth0.com/t/the-login-window-in-a-wkwebview-on-macos-is-sometimes-broken/41048,
+# https://community.jamf.com/general-discussions-2/wkwebview-native-macos-connector-30405)
+# -- switching to Safari is the cited workaround in similar cases, but
+# neither thread identifies a root cause. Reinforces "likely a
+# Yappy/WebKit-side bug, not CI-specific" over either original hypothesis.
+#
+# Separately, unrelated to this bug: `macos-14` runner images are already
+# deprecating (began 2026-07-06, unsupported by 2026-11-02, per
+# https://github.com/actions/runner-images/issues/13518) -- `runs-on:
+# macos-14` here and in example.yml / yappy-dictation-probe.yml will need
+# bumping before then regardless of this issue.
 
 on:
   workflow_dispatch:
