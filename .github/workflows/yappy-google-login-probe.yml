@@ -14,29 +14,44 @@ name: yappy-google-login-probe
 # runners -- a permissions failure gives a distinct "not allowed assistive
 # access" error, and that never appeared.
 #
-# BLOCKED past the click: Yappy uses an embedded WebKit view for the
-# Google auth flow -- com.apple.WebKit.Networking plus two
-# com.apple.WebKit.WebContent processes spin up on click, confirmed via a
-# full process list -- rather than the system browser. But no visible
-# window or menu-bar status item ever appears afterward: `entire contents`,
-# `every window`, and `every menu bar item of menu bar 2` of process
-# "Yappy" all come back empty, across delays from 0.4s to ~9s post-click,
-# and a probe-before.png capture at 0.4s post-click shows nothing either
-# (checked network reachability too: `curl` to accounts.google.com from
-# the runner returns 302, so this isn't egress/DNS).
+# BLOCKED past the click, with real evidence now (8 dispatches total):
+# Yappy uses an embedded WebKit view for the Google auth flow --
+# com.apple.WebKit.Networking plus two com.apple.WebKit.WebContent
+# processes spin up on click, confirmed via a full process list -- rather
+# than the system browser. Yappy's own unified log (`log show --predicate
+# 'process == "Yappy"'`) shows BOTH resulting webviews (two concurrent
+# WebPageProxy instances, distinct webPageIDs) successfully finish loading
+# (`didFinishLoadForFrame`, no WebKit-level error, safeBrowsingWarning=0)
+# -- then, ~6-7s later, both views' visibility flips 1 -> 0 (hidden).
+# Nothing in Yappy's own logging names an error, denial, or rejection
+# anywhere in that window. Across every check run (delays from 0.4s to
+# ~9s post-click, an `entire contents`/`every window`/`every menu bar
+# item of menu bar 2` query of process "Yappy", and an all-process
+# `windows of p` sweep), no visible window or menu-bar status item is
+# ever observed, and no screenshot ever shows anything but the desktop.
+# Network reachability is fine (curl to accounts.google.com from the
+# runner returns 302), so this isn't egress/DNS.
 #
-# Two live hypotheses, neither confirmed:
+# Two hypotheses going in; the log evidence now leans toward #2, though
+# neither is proven:
 #  1. Google's OAuth blocks sign-in from embedded (non-system-browser)
-#     webviews as an anti-phishing measure ("disallowed_useragent"). If
-#     that's what's happening, no amount of scripting here gets past it --
-#     the fix would have to be on Yappy's side (system browser or
-#     ASWebAuthenticationSession instead of a bare WKWebView).
-#  2. The WebKit-hosted window specifically fails to render in this
-#     runner's WindowServer session (a known category of flakiness for
-#     WebKit XPC processes in CI-like macOS environments), even though
-#     plain AppKit windows (the initial welcome screen) render fine.
-# Distinguishing these needs either a much longer settle (untried: 20s+)
-# or Console/crash-log inspection on the runner, neither done yet.
+#     webviews as an anti-phishing measure ("disallowed_useragent"). Less
+#     likely given the log shows two successful page loads with no error
+#     signal -- a rejection page is still a page Google would have to
+#     serve and WebKit would still report loading successfully, so this
+#     isn't ruled out, but nothing positively supports it either.
+#  2. The WebKit-hosted view's window fails to actually composite/display
+#     in this runner's WindowServer session even though it loads and its
+#     internal visibility state briefly reads "visible", while plain
+#     AppKit windows (the initial welcome screen) render and screenshot
+#     fine. The load-succeeds-then-goes-invisible pattern fits this better
+#     than an explicit rejection.
+# Distinguishing these further would need seeing the actual rendered
+# content (not attempted: forcing the WKWebView's window to a known
+# on-screen frame/level before it can hide, or extracting the loaded
+# page's URL/title via the accessibility tree while `didFinishLoadForFrame`
+# is firing) -- not done. Stopped here; no credentials have been typed
+# anywhere in this process.
 
 on:
   workflow_dispatch:
