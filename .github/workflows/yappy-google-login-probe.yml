@@ -37,6 +37,7 @@ jobs:
           install-type: dmg
           settle-seconds: '8'
           interact-script: |
+            set netCheck to do shell script "curl -s -o /dev/null -w '%{http_code}' --max-time 5 https://accounts.google.com/ || echo FAILED"
             tell application "Yappy" to activate
             delay 1
             tell application "System Events"
@@ -44,11 +45,11 @@ jobs:
                 click button 1 of window 1
               end tell
             end tell
-            delay 0.4
-            do shell script "screencapture -x probe-before.png"
             delay 4
             tell application "System Events"
               tell process "Yappy"
-                return name of every window
+                set winNames to name of every window
+                set menuNames to name of every menu bar item of menu bar 2
               end tell
             end tell
+            return "net=" & netCheck & " windows=" & (winNames as string) & " menubar=" & (menuNames as string)
