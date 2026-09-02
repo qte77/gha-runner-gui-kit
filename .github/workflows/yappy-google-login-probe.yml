@@ -46,5 +46,5 @@ jobs:
             end tell
             delay 5
             tell application "System Events"
-              return name of every process whose background only is false
+              return name of every process
             end tell
