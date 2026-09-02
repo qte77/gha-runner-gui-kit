@@ -1,19 +1,42 @@
 name: yappy-google-login-probe
 
-# Phase B, step 1: click "Sign in with Google" and screenshot what appears.
-# example.yml's run showed Yappy's real first-launch screen is a mandatory
-# Google sign-in gate (contradicts yappy.biz's own docs, which claim no
-# account is needed -- direct observation wins). Before typing any real
-# credentials, this finds out what the post-click UI actually is: an
-# embedded webview inside Yappy, a separate native window, or the system
-# default browser -- that answer determines what process the next script
-# has to target. No credentials involved in this step.
+# Phase B, step 1: click "Sign in with Google". example.yml's run showed
+# Yappy's real first-launch screen is a mandatory Google sign-in gate
+# (contradicts yappy.biz's own docs, which claim no account is needed --
+# direct observation wins).
 #
-# UNVERIFIED -- has not been run yet. The click itself depends on Yappy
-# exposing the button through the Accessibility tree with this exact
-# label, and on Accessibility permission for UI scripting being granted
-# to whatever process runs osascript on this runner (separate from, but
-# similar to, the mic/Accessibility caveat in yappy-dictation-probe.yml).
+# CONFIRMED WORKING: the click itself. The button has no accessible name
+# (empty AXTitle) -- System Events sees it only as `button 1 of window 1`,
+# a direct sibling of the heading/subtitle text, not nested under the
+# icon's group/scroll-area. `click button "Sign in with Google" of window 1`
+# fails (-1728, no such object); `click button 1 of window 1` works.
+# Accessibility permission for UI scripting is NOT an issue on macos-14
+# runners -- a permissions failure gives a distinct "not allowed assistive
+# access" error, and that never appeared.
+#
+# BLOCKED past the click: Yappy uses an embedded WebKit view for the
+# Google auth flow -- com.apple.WebKit.Networking plus two
+# com.apple.WebKit.WebContent processes spin up on click, confirmed via a
+# full process list -- rather than the system browser. But no visible
+# window or menu-bar status item ever appears afterward: `entire contents`,
+# `every window`, and `every menu bar item of menu bar 2` of process
+# "Yappy" all come back empty, across delays from 0.4s to ~9s post-click,
+# and a probe-before.png capture at 0.4s post-click shows nothing either
+# (checked network reachability too: `curl` to accounts.google.com from
+# the runner returns 302, so this isn't egress/DNS).
+#
+# Two live hypotheses, neither confirmed:
+#  1. Google's OAuth blocks sign-in from embedded (non-system-browser)
+#     webviews as an anti-phishing measure ("disallowed_useragent"). If
+#     that's what's happening, no amount of scripting here gets past it --
+#     the fix would have to be on Yappy's side (system browser or
+#     ASWebAuthenticationSession instead of a bare WKWebView).
+#  2. The WebKit-hosted window specifically fails to render in this
+#     runner's WindowServer session (a known category of flakiness for
+#     WebKit XPC processes in CI-like macOS environments), even though
+#     plain AppKit windows (the initial welcome screen) render fine.
+# Distinguishing these needs either a much longer settle (untried: 20s+)
+# or Console/crash-log inspection on the runner, neither done yet.
 
 on:
   workflow_dispatch:
@@ -37,7 +60,6 @@ jobs:
           install-type: dmg
           settle-seconds: '8'
           interact-script: |
-            set netCheck to do shell script "curl -s -o /dev/null -w '%{http_code}' --max-time 5 https://accounts.google.com/ || echo FAILED"
             tell application "Yappy" to activate
             delay 1
             tell application "System Events"
@@ -45,11 +67,4 @@ jobs:
                 click button 1 of window 1
               end tell
             end tell
-            delay 4
-            tell application "System Events"
-              tell process "Yappy"
-                set winNames to name of every window
-                set menuNames to name of every menu bar item of menu bar 2
-              end tell
-            end tell
-            return "net=" & netCheck & " windows=" & (winNames as string) & " menubar=" & (menuNames as string)
+            delay 9
