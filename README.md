@@ -43,32 +43,46 @@ target. Yappy publishes no Terms of Service; its only agent policy
 ([`agents.md`](https://yappy.biz/agents.md)) covers its website API, not the
 desktop app.
 
+### Case study: Yappy, and the CI ceiling for this action
+
 **Confirmed by running `example.yml`'s screenshots**, not by Yappy's docs
 (which claim otherwise): Yappy v0.4.22's real first launch is a mandatory
 "Sign in with Google" gate, no skip option. A third-party app's UI can't be
 known in advance — trust a screenshot from a real run over marketing copy.
 
 [`.github/workflows/yappy-google-login-probe.yml`](.github/workflows/yappy-google-login-probe.yml)
-is the login step. **Clicking "Sign in with Google" is confirmed working**
-(the button has no accessible name — `button 1 of window 1`, not
-`button "Sign in with Google"`). **Past the click is likely not
-automatable on GitHub-hosted macOS runners at all**: Yappy's embedded
-WebKit auth view finishes loading successfully then goes invisible ~6-7s
-later with no error logged; a tight poll ruled out "hides too fast to
-catch"; the runner's own system log shows `RunningBoard` process-role
-messages consistent with this session type never promoting the resulting
-window to visible. See the file header for full evidence. If Google login
-needs to happen for real, the remaining options are a self-hosted runner
-(a real, normally-logged-in Mac where a human signs in once and the
-session persists) or capturing Yappy's post-login persisted state
-elsewhere and restoring it into each run — neither attempted. No
-credentials have been typed anywhere in this process.
+scripts up to that gate. **Clicking "Sign in with Google" works** (the
+button has no accessible name — `click button 1 of window 1`, not
+`click button "Sign in with Google"`).
+
+**Decided, closed: Google sign-in itself is out of scope for this action on
+GitHub-hosted macOS runners, and not being pursued further here.** This
+isn't "still blocked, more work planned" — it's a structural limit of the
+runner environment. Evidence (10 dispatches; full detail in the file's
+header): Yappy's embedded WebKit auth view finishes loading successfully,
+then goes invisible ~6-7s later with no error ever logged; a poll every
+0.2s for 6s right after the click never found a window at all, ruling out
+"exists but hides too fast to catch"; no crash report exists; the runner's
+own system log shows `RunningBoard` process-role messages (`WindowServer`
+in role `Background`) consistent with this session type never promoting
+the resulting modal to a visible/key state. That's a property of the
+runner's session type, not something an AppleScript change can fix.
+
+If a project genuinely needs Yappy signed in for testing, the two paths
+are a self-hosted runner (a real, normally-logged-in Mac where a human
+signs in once and the session persists across runs) or capturing Yappy's
+post-login persisted state elsewhere and restoring it into each ephemeral
+run. Neither is implemented here — this repo has no macOS hardware outside
+GitHub-hosted runners to build or verify either against. No credentials
+have been typed anywhere in this process.
 
 [`.github/workflows/yappy-dictation-probe.yml`](.github/workflows/yappy-dictation-probe.yml)
 covers the post-login dictation step — virtual audio loopback, synthesized
-speech, Yappy's documented hands-free double-tap hotkey — but its
-account-free premise turned out to be wrong (see above); it needs the login
-flow folded in ahead of it before it can run meaningfully. **UNVERIFIED**.
+speech, Yappy's documented hands-free double-tap hotkey — kept for
+reference (its mechanics are still accurate) but **not runnable as-is**:
+it needs a signed-in Yappy first, which per the above isn't reachable in
+this repo's CI. Treat it as a starting point for whoever solves login via
+one of the two paths above, not as a working probe.
 
 ## Inputs
 

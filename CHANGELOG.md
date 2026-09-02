@@ -52,3 +52,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Yappy's core dictation feature needs no account. Running `example.yml`
   and inspecting the actual screenshots showed a mandatory "Sign in with
   Google" gate on first launch — the docs don't match the shipped app.
+
+### Decided
+
+- **Closing the Yappy Google-login automation attempt as out of scope for
+  this action on GitHub-hosted macOS runners.** Not "blocked, more work
+  planned" — 10 dispatches of evidence (see
+  `yappy-google-login-probe.yml`'s header) point to a structural limit of
+  the runner's session type (RunningBoard process-role assignment), not a
+  fixable script bug. Remaining paths (a self-hosted runner, or capturing
+  and restoring Yappy's post-login state) both need macOS hardware this
+  repo doesn't have access to, and aren't being pursued here.
+  `yappy-dictation-probe.yml` is kept for reference only — not runnable
+  without a signed-in Yappy.
