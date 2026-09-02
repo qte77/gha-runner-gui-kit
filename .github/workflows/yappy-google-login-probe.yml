@@ -71,16 +71,20 @@ name: yappy-google-login-probe
 #
 # Separately, unrelated to this bug: `macos-14` runner images are already
 # deprecating (began 2026-07-06, unsupported by 2026-11-02, per
-# https://github.com/actions/runner-images/issues/13518) -- `runs-on:
-# macos-14` here and in example.yml / yappy-dictation-probe.yml will need
-# bumping before then regardless of this issue.
+# https://github.com/actions/runner-images/issues/13518). Bumped to
+# macos-26 (macOS 26 Arm64, the current default) below -- also a genuine
+# retest, not just housekeeping: a newer WindowServer/RunningBoard
+# implementation could plausibly behave differently for this exact
+# symptom. Mark this comment block's "not automatable" conclusion as
+# PENDING RE-VERIFICATION until a real run on macos-26 confirms or
+# overturns it.
 
 on:
   workflow_dispatch:
 
 jobs:
   probe:
-    runs-on: macos-14
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
 
