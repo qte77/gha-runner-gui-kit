@@ -57,11 +57,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Closing the Yappy Google-login automation attempt as out of scope for
   this action on GitHub-hosted macOS runners.** Not "blocked, more work
-  planned" — 10 dispatches of evidence (see
+  planned" — 11 dispatches of evidence (see
   `yappy-google-login-probe.yml`'s header) point to a structural limit of
   the runner's session type (RunningBoard process-role assignment), not a
-  fixable script bug. Remaining paths (a self-hosted runner, or capturing
-  and restoring Yappy's post-login state) both need macOS hardware this
-  repo doesn't have access to, and aren't being pursued here.
-  `yappy-dictation-probe.yml` is kept for reference only — not runnable
-  without a signed-in Yappy.
+  fixable script bug. Also tried, per two web-research leads, and neither
+  changed the result: disabling App Nap before launch, and relaunching via
+  `launchctl asuser` instead of plain `open`. Remaining paths (a
+  self-hosted runner, or capturing and restoring Yappy's post-login state)
+  both need macOS hardware this repo doesn't have access to, and aren't
+  being pursued here. `yappy-dictation-probe.yml` is kept for reference
+  only — not runnable without a signed-in Yappy.

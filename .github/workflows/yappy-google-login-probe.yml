@@ -14,37 +14,46 @@ name: yappy-google-login-probe
 # runners -- a permissions failure gives a distinct "not allowed assistive
 # access" error, and that never appeared.
 #
-# LIKELY NOT AUTOMATABLE past the click, on GitHub-hosted macOS runners
-# specifically (10 dispatches total). Yappy uses an embedded WebKit view
-# for the Google auth flow -- com.apple.WebKit.Networking plus two
-# com.apple.WebKit.WebContent processes spin up on click -- rather than
-# the system browser. Yappy's own unified log shows both resulting
-# webviews finish loading successfully (no WebKit error, no
-# safeBrowsingWarning) then go invisible ~6-7s later, with nothing logged
-# as an error/denial anywhere. A tight poll (every 0.2s for 6s, right
-# after the click, ready to reposition+screenshot the instant a window
-# appeared) never found a window at all -- ruling out "it exists but
-# hides too fast to catch". No crash report exists for Yappy. The
-# system's broader unified log around that window shows RunningBoard
-# process-role messages -- WindowServer in role `Background`,
-# WindowManager.agent in role `UserInteractiveFocal` -- consistent with
-# this runner's GUI session simply not promoting a new modal/sheet window
-# from a background-role process to a visible/key state. That is a
-# structural property of the runner's session type, not something fixable
-# via AppleScript. Network reachability is fine (curl to
-# accounts.google.com returns 302), so this isn't egress/DNS, and
-# Accessibility permission is confirmed fine (see above).
+# NOT AUTOMATABLE past the click, on GitHub-hosted macOS runners
+# specifically (11 dispatches total; CLOSED, see README's "Case study:
+# Yappy" section). Yappy uses an embedded WebKit view for the Google auth
+# flow -- com.apple.WebKit.Networking plus two com.apple.WebKit.WebContent
+# processes spin up on click -- rather than the system browser. Yappy's
+# own unified log shows both resulting webviews finish loading
+# successfully (no WebKit error, no safeBrowsingWarning) then go invisible
+# ~6-7s later, with nothing logged as an error/denial anywhere. A tight
+# poll (every 0.2s for 6s, right after the click, ready to
+# reposition+screenshot the instant a window appeared) never found a
+# window at all -- ruling out "it exists but hides too fast to catch". No
+# crash report exists for Yappy. The system's broader unified log around
+# that window shows RunningBoard process-role messages -- WindowServer in
+# role `Background`, WindowManager.agent in role `UserInteractiveFocal`.
+# External research (WebKit's own ProcessThrottler behavior) indicates
+# that role follows FROM the hosting view never becoming visible, rather
+# than being an independent cause -- so it's a symptom, not the root
+# mechanism, but the underlying "why doesn't the window become visible"
+# is still unanswered. Tried and made no difference: disabling App Nap
+# (`defaults write NSGlobalDomain NSAppSleepDisabled -bool YES`) before
+# launch, and relaunching via `launchctl asuser $(id -u) open -a ...`
+# instead of plain `open` (in case the launch context affected RunningBoard
+# promotion) -- both still produced `windowFound=false`. Network
+# reachability is fine (curl to accounts.google.com returns 302), so this
+# isn't egress/DNS, and Accessibility permission is confirmed fine.
 #
-# Conclusion: this is probably not solvable from inside a GitHub-hosted
-# ephemeral macOS runner, regardless of script. If Google login needs to
-# happen for real, the options are (a) a self-hosted runner on a real,
-# normally-logged-in Mac you control, where a human signs in once and the
-# session persists across runs, or (b) sign in manually on your own
-# machine, capture whatever Yappy persists after a successful login
-# (contents unknown until a successful sign-in is observed somewhere --
-# likely something under ~/.yappy/ and/or Keychain), and restore that
-# into each ephemeral run as a secret. Neither attempted. No credentials
-# have been typed anywhere in this process.
+# Conclusion: not solvable from inside a GitHub-hosted ephemeral macOS
+# runner via any script-side change attempted so far. If Google login
+# needs to happen for real, the options are (a) a self-hosted runner on a
+# real, normally-logged-in Mac, where a human signs in once and the
+# session persists across runs, or (b) sign in manually elsewhere, capture
+# whatever Yappy persists after a successful login (contents unknown until
+# observed -- likely something under ~/.yappy/ and/or Keychain), and
+# restore that into each ephemeral run as a secret. Neither attempted --
+# this repo has no macOS hardware outside GitHub-hosted runners to build
+# or verify either against. No credentials have been typed anywhere in
+# this process. Also worth doing regardless of CI: report this to Yappy's
+# developer -- Apple Developer Forum threads show ASWebAuthenticationSession
+# auth windows failing silently even outside CI, suggesting this may be a
+# Yappy-side bug independent of the runner environment.
 
 on:
   workflow_dispatch:
