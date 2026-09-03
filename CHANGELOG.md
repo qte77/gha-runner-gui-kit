@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/windows.ps1` + `scripts/linux.sh`: structural mirrors of the macOS
   script for the other two runner OSes. **Unverified** — no confirmed
   consumer yet, not run against a real target.
+
+### Fixed
+
+- `scripts/linux.sh`: the `sleep 2` after backgrounding Xvfb was a race, not a
+  wait — a backgrounded Xvfb is not necessarily listening by the time the
+  shell returns. Replaced with polling `xdpyinfo`. Also: both `scrot` captures
+  ran unconditionally with nothing checking what actually rendered, so a
+  window that maps and paints nothing produced the same-looking artifact as a
+  working app. `identify -format '%k'` now warns (not fails — this action
+  treats an unexpected UI as information, not grounds to abort) when a
+  capture looks blank. Found and fixed while building a similar probe against
+  a real GTK4 app; the technique (not this action's own download/install
+  path) was verified against it — still `UNVERIFIED` end-to-end here.
 - `.github/workflows/example.yml`: end-to-end usage example (macOS).
 - `.github/workflows/yappy-dictation-probe.yml`: dictation-only probe against
   Yappy (virtual audio loopback + synthesized speech + push-to-talk hotkey
