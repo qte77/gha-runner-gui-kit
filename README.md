@@ -13,7 +13,7 @@ reusable action.
 
 | OS | Status |
 |---|---|
-| macOS | **Verified** — proven against a real notarized DMG on `macos-14` |
+| macOS | **Verified on `macos-14`** — proven against a real notarized DMG. **`macos-26`: known broken**, see below. |
 | Windows | Designed, **not tested** against a real target. No confirmed consumer yet. |
 | Linux | Designed, **not tested** against a real target. No confirmed consumer yet. |
 
@@ -83,6 +83,28 @@ reference (its mechanics are still accurate) but **not runnable as-is**:
 it needs a signed-in Yappy first, which per the above isn't reachable in
 this repo's CI. Treat it as a starting point for whoever solves login via
 one of the two paths above, not as a working probe.
+
+### `macos-26` is currently unusable for this action — also closed, not just untested
+
+Bumping the runner image from `macos-14` to `macos-26` (tried on a
+since-parked branch, `chore/bump-macos-26`) surfaced a second, unrelated
+regression: **a second `screencapture -x` call within the same job now
+triggers an unclickable system consent dialog** ("'bash' is requesting to
+bypass the system private window picker..."), confirmed via `example.yml`
+— which has zero `interact-script` — so this has nothing to do with Yappy;
+it breaks this action's "after" screenshot for every consumer on
+`macos-26`. `main` itself was never changed to `macos-26`; the bump only
+ever existed on that now-parked branch.
+
+This is a known, already-reported, unresolved problem — not something
+worth re-investigating from scratch. Apple Developer Forums thread 806451
+reports the identical popup blocking GitHub Actions UI tests on macOS 15,
+with zero replies. The sanctioned Apple replacement (`ScreenCaptureKit` +
+`SCContentSharingPicker`) is itself an interactive system-picker UI —
+there is no documented way to satisfy it headlessly, and no fix exists in
+`actions/runner-images`. Staying on `macos-14` until closer to its
+2026-11-02 deprecation (`actions/runner-images#13518`), or until Apple or
+GitHub ships a fix, whichever comes first.
 
 ## Inputs
 
