@@ -67,3 +67,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   both need macOS hardware this repo doesn't have access to, and aren't
   being pursued here. `yappy-dictation-probe.yml` is kept for reference
   only — not runnable without a signed-in Yappy.
+- **Closing `macos-26` as unusable for this action, staying on `macos-14`
+  for now.** Bumping the runner image (on a parked, unmerged branch,
+  `chore/bump-macos-26`) surfaced a second, unrelated regression: a second
+  `screencapture -x` call in the same job now triggers an unclickable
+  "bash is requesting to bypass the system private window picker" consent
+  dialog, breaking this action's "after" screenshot for every consumer on
+  `macos-26` — confirmed with `example.yml`, which has zero
+  `interact-script`, so not Yappy-specific. This is a known, already
+  publicly reported, unresolved problem (Apple Developer Forums thread
+  806451: identical popup blocking GitHub Actions UI tests on macOS 15,
+  zero replies) with no sanctioned headless fix — `ScreenCaptureKit` /
+  `SCContentSharingPicker` is itself an interactive picker. `main` was
+  never changed to `macos-26`; staying on `macos-14` until its
+  2026-11-02 deprecation forces a revisit, or Apple/GitHub ships a fix.
