@@ -69,22 +69,23 @@ name: yappy-google-login-probe
 # neither thread identifies a root cause. Reinforces "likely a
 # Yappy/WebKit-side bug, not CI-specific" over either original hypothesis.
 #
-# Separately, unrelated to this bug: `macos-14` runner images are already
-# deprecating (began 2026-07-06, unsupported by 2026-11-02, per
-# https://github.com/actions/runner-images/issues/13518). Bumped to
-# macos-26 (macOS 26 Arm64, the current default) below -- also a genuine
-# retest, not just housekeeping: a newer WindowServer/RunningBoard
-# implementation could plausibly behave differently for this exact
-# symptom. Mark this comment block's "not automatable" conclusion as
-# PENDING RE-VERIFICATION until a real run on macos-26 confirms or
-# overturns it.
+# Separately: `macos-14` runner images deprecate 2026-11-02
+# (actions/runner-images#13518). A retest on `macos-26` was attempted
+# (branch chore/bump-macos-26) but is MOOT, not just inconclusive: that
+# runner image has its own unrelated, unfixable regression where a second
+# `screencapture` call in a job triggers an unclickable system consent
+# dialog (see README's "macos-26 is currently unusable..." section) --
+# there is no way to even get a valid screenshot to check this workflow's
+# actual behavior on macos-26 right now. Staying on `macos-14` for both
+# reasons (this closure, and the screencapture regression) until one of
+# them changes.
 
 on:
   workflow_dispatch:
 
 jobs:
   probe:
-    runs-on: macos-26
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v5
 
