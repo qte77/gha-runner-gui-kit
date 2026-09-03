@@ -91,6 +91,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   publicly reported, unresolved problem (Apple Developer Forums thread
   806451: identical popup blocking GitHub Actions UI tests on macOS 15,
   zero replies) with no sanctioned headless fix — `ScreenCaptureKit` /
-  `SCContentSharingPicker` is itself an interactive picker. `main` was
-  never changed to `macos-26`; staying on `macos-14` until its
-  2026-11-02 deprecation forces a revisit, or Apple/GitHub ships a fix.
+  `SCContentSharingPicker` is itself an interactive picker. Staying on
+  `macos-14` until its 2026-11-02 deprecation forces a revisit, or
+  Apple/GitHub ships a fix.
+
+### Fixed
+
+- **`runs-on: macos-26` briefly landed on `main`** in all three workflow
+  files via squash-merging a branch (`fix/linux-xvfb-race-and-blank-render`)
+  that had been built on top of the parked `chore/bump-macos-26` commit —
+  its unrelated `scripts/linux.sh` fix was reviewed and correct, but the
+  full diff (including the workflow files it carried along) wasn't
+  checked before merging, so the already-decided "stay on `macos-14`"
+  call from the entry above got silently reverted for a few minutes.
+  Caught immediately after merge by re-checking `main`'s actual file
+  content (not just CI status). Reverted here; `yappy-google-login-probe.yml`'s
+  header also had stale "PENDING RE-VERIFICATION" text from that same
+  commit, corrected to point at the `macos-26` closure instead.
