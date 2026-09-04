@@ -8,8 +8,18 @@ author: qte77
 
 inputs:
   download-url:
-    description: 'URL to download the installer/app archive from'
-    required: true
+    description: >-
+      URL to download the installer/app archive from. Exactly one of
+      download-url or installer-path is required.
+    required: false
+    default: ''
+  installer-path:
+    description: >-
+      Path to an installer/app archive already present on the runner --
+      e.g. one this same job just built and signed. Takes precedence over
+      download-url when both are given. macOS only for now.
+    required: false
+    default: ''
   install-type:
     description: >-
       Installer type. macOS: dmg | zip | pkg. Windows: exe | zip.
@@ -45,6 +55,7 @@ runs:
       run: bash "${{ github.action_path }}/scripts/macos.sh"
       env:
         DOWNLOAD_URL: ${{ inputs.download-url }}
+        INSTALLER_PATH: ${{ inputs.installer-path }}
         INSTALL_TYPE: ${{ inputs.install-type }}
         LAUNCH_TARGET: ${{ inputs.launch-target }}
         INTERACT_SCRIPT: ${{ inputs.interact-script }}
