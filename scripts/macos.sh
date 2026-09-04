@@ -4,16 +4,38 @@
 # implementation the Windows/Linux scripts mirror structurally.
 set -euo pipefail
 
-: "${DOWNLOAD_URL:?required}"
+DOWNLOAD_URL="${DOWNLOAD_URL:-}"
+INSTALLER_PATH="${INSTALLER_PATH:-}"
 INSTALL_TYPE="${INSTALL_TYPE:-dmg}"
 LAUNCH_TARGET="${LAUNCH_TARGET:-}"
 SETTLE_SECONDS="${SETTLE_SECONDS:-5}"
 INTERACT_SCRIPT="${INTERACT_SCRIPT:-}"
 
 case "$INSTALL_TYPE" in
+  dmg) installer_file="installer.dmg" ;;
+  zip) installer_file="installer.zip" ;;
+  pkg) installer_file="installer.pkg" ;;
+  *)
+    echo "Unknown install-type: $INSTALL_TYPE (expected dmg|zip|pkg)" >&2
+    exit 1
+    ;;
+esac
+
+# installer-path (already on the runner -- e.g. a DMG this same job just
+# built and signed) takes precedence over download-url (a URL to curl --
+# e.g. a third-party app's release).
+if [ -n "$INSTALLER_PATH" ]; then
+  installer_file="$INSTALLER_PATH"
+elif [ -n "$DOWNLOAD_URL" ]; then
+  curl -fsSL -o "$installer_file" "$DOWNLOAD_URL"
+else
+  echo "Either download-url or installer-path is required" >&2
+  exit 1
+fi
+
+case "$INSTALL_TYPE" in
   dmg)
-    curl -fsSL -o installer.dmg "$DOWNLOAD_URL"
-    hdiutil attach installer.dmg -nobrowse -mountpoint /Volumes/GuiKitMount
+    hdiutil attach "$installer_file" -nobrowse -mountpoint /Volumes/GuiKitMount
     app_path=$(find /Volumes/GuiKitMount -maxdepth 1 -name "*.app" -print -quit)
     if [ -z "$app_path" ]; then
       echo "No .app bundle found at the top level of the mounted DMG" >&2
@@ -29,20 +51,14 @@ case "$INSTALL_TYPE" in
     launch_path="/Applications/$app_name"
     ;;
   zip)
-    curl -fsSL -o installer.zip "$DOWNLOAD_URL"
-    unzip -q installer.zip -d /Applications/
+    unzip -q "$installer_file" -d /Applications/
     [ -n "$LAUNCH_TARGET" ] || { echo "launch-target is required for install-type=zip" >&2; exit 1; }
     launch_path="/Applications/$LAUNCH_TARGET"
     ;;
   pkg)
-    curl -fsSL -o installer.pkg "$DOWNLOAD_URL"
-    sudo installer -pkg installer.pkg -target /
+    sudo installer -pkg "$installer_file" -target /
     [ -n "$LAUNCH_TARGET" ] || { echo "launch-target is required for install-type=pkg" >&2; exit 1; }
     launch_path="/Applications/$LAUNCH_TARGET"
-    ;;
-  *)
-    echo "Unknown install-type: $INSTALL_TYPE (expected dmg|zip|pkg)" >&2
-    exit 1
     ;;
 esac
 
