@@ -28,6 +28,7 @@ run against your actual target and fix what breaks.
 - uses: qte77/gha-runner-gui-kit@main
   with:
     download-url: https://example.com/app.dmg
+    # installer-path: ./build/app.dmg  # alternative to download-url -- see below
     install-type: dmg          # dmg|zip|pkg (macOS), exe|zip (Windows), appimage|deb|tar (Linux)
     launch-target: ''          # not needed for macOS dmg -- the .app is discovered automatically
     interact-script: ''        # optional, best-effort, allowed to fail
@@ -35,6 +36,12 @@ run against your actual target and fix what breaks.
 - uses: actions/upload-artifact@v4   # already done internally, screenshots land in
                                        # `gui-probe-screenshots-<os>`
 ```
+
+Use `installer-path` instead of `download-url` when the installer is
+already on the runner — e.g. one this same job just built and code-signed
+— rather than something to `curl` from a URL. `installer-path` takes
+precedence when both are given. **macOS only for now** — verified against
+a real DMG on `macos-14`; no Windows/Linux consumer yet.
 
 See [`.github/workflows/example.yml`](.github/workflows/example.yml) for a
 working end-to-end example (macOS). It already installs and launches
@@ -110,7 +117,8 @@ GitHub ships a fix, whichever comes first.
 
 | Input | Required | Default | Notes |
 |---|---|---|---|
-| `download-url` | yes | — | URL to the installer/app archive |
+| `download-url` | one of these two | — | URL to the installer/app archive |
+| `installer-path` | one of these two | — | Path to an installer already on the runner; takes precedence over `download-url`. macOS only for now. |
 | `install-type` | no | `dmg` | Platform-specific installer kind |
 | `launch-target` | no | `''` | Executable name/path; not needed for macOS `dmg` |
 | `interact-script` | no | `''` | AppleScript (macOS) / PowerShell (Windows) / shell one-liner (Linux). Allowed to fail. |

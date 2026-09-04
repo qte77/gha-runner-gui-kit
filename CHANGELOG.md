@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/windows.ps1` + `scripts/linux.sh`: structural mirrors of the macOS
   script for the other two runner OSes. **Unverified** — no confirmed
   consumer yet, not run against a real target.
+- `installer-path` input (`action.yml` + `scripts/macos.sh`): an alternative
+  to `download-url` for an installer already on the runner (e.g. one the
+  same job just built and signed) instead of always curling a URL. Takes
+  precedence over `download-url` when both are given. Verified for real
+  against a DMG on `macos-14`. macOS only — no Windows/Linux consumer yet.
+  Motivated by exploring how a separate project (a Ghostty fork with a
+  release pipeline that builds/signs/notarizes in-job, nothing to curl)
+  could use this action as a post-build smoke test.
 
 ### Fixed
 
