@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verified working this session (proved out in qte77/__2026-09-01-yappy-explore
+# Verified working this session (proved out in an earlier exploration
 # against a real notarized DMG on macos-14). This is the reference
 # implementation the Windows/Linux scripts mirror structurally.
 set -euo pipefail
