@@ -116,3 +116,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   content (not just CI status). Reverted here; `yappy-google-login-probe.yml`'s
   header also had stale "PENDING RE-VERIFICATION" text from that same
   commit, corrected to point at the `macos-26` closure instead.
+
+### Security
+
+- Pinned every `uses:` action reference (`actions/checkout` in the three
+  workflows, `actions/upload-artifact` in `action.yml`) to the full-length
+  commit SHA its tag currently resolves to, with a trailing `# <tag>`
+  comment — required by the repo's updated Actions policy (actions must be
+  SHA-pinned; only qte77-owned, GitHub-created, or Marketplace-verified
+  actions allowed). No version upgrades: `checkout@v5` and
+  `upload-artifact@v4` are pinned to what those tags point at today
+  (`v5.1.0` and `v4.6.2` respectively), not bumped. Both actions are
+  GitHub-created (`actions/*`), already compliant with the creator
+  restriction.
