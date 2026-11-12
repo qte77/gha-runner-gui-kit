@@ -117,6 +117,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   header also had stale "PENDING RE-VERIFICATION" text from that same
   commit, corrected to point at the `macos-26` closure instead.
 
+### Added
+
+- `.github/dependabot.yml`: weekly `github-actions` ecosystem updates,
+  grouped into `actions-security-updates` (`applies-to: security-updates`,
+  all patterns) and `actions-version-updates` (`applies-to: version-updates`,
+  all patterns, `minor`/`patch` only — majors stay as separate PRs). No
+  `github-codeql-action` group — this repo doesn't run CodeQL. No other
+  ecosystem present (no package manifests).
+
 ### Security
 
 - Pinned every `uses:` action reference (`actions/checkout` in the three
