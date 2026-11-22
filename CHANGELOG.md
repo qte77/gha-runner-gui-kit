@@ -7,13 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- All three workflows run on `macos-15` instead of the deprecated `macos-14`.
-  `example.yml` on `macos-15` (2026-11-22, [run](https://github.com/qte77/gha-runner-gui-kit/actions/runs/45071072637)) produced both
-  screenshots with no consent dialog on the second `screencapture -x`.
-  `macos-26` stays unusable (see the README).
-
 ### Added
 
 - `action.yml` + `scripts/macos.sh`: composite action core — download, install,
@@ -67,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- All three workflows run on `macos-15` instead of the deprecated `macos-14`.
+  `example.yml` on `macos-15` (2026-11-22, [run](https://github.com/qte77/gha-runner-gui-kit/actions/runs/45071072637)) produced both
+  screenshots with no consent dialog on the second `screencapture -x`.
+  `macos-26` stays unusable (see the README).
 - `.github/workflows/example.yml`: added a descriptive `User-Agent` header to
   the release-URL `curl` call, per `yappy.biz/agents.md`'s explicit ask of
   automated clients.
