@@ -13,7 +13,7 @@ reusable action.
 
 | OS | Status |
 |---|---|
-| macOS | **Verified on `macos-14`** — proven against a real notarized DMG. **`macos-26`: known broken**, see below. |
+| macOS | **Runs on `macos-15`** — `example.yml` on `macos-15` (2026-11-22) produced both screenshots with no consent dialog. Earlier verified on `macos-14` (now deprecated) against a real notarized DMG. **`macos-26`: known broken**, see below. |
 | Windows | Designed, **not tested** against a real target. No confirmed consumer yet. |
 | Linux | Designed, **not tested** against a real target. No confirmed consumer yet. |
 
@@ -109,9 +109,12 @@ reports the identical popup blocking GitHub Actions UI tests on macOS 15,
 with zero replies. The sanctioned Apple replacement (`ScreenCaptureKit` +
 `SCContentSharingPicker`) is itself an interactive system-picker UI —
 there is no documented way to satisfy it headlessly, and no fix exists in
-`actions/runner-images`. Staying on `macos-14` until closer to its
-2026-11-02 deprecation (`actions/runner-images#13518`), or until Apple or
-GitHub ships a fix, whichever comes first.
+`actions/runner-images`. `macos-14` is deprecated since 2026-11-02
+(`actions/runner-images#13518`), so the workflows now run on `macos-15`:
+an `example.yml` run there on 2026-11-22 ([run](https://github.com/qte77/gha-runner-gui-kit/actions/runs/45071072637)) showed no consent
+dialog on the second screenshot, despite the forum report above. If a later
+`macos-15` image brings the dialog back, the "after" screenshot is where it
+shows.
 
 ## Inputs
 

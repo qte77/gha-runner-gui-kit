@@ -22,7 +22,7 @@ name: yappy-dictation-probe
 # Yappy launches, the double-tap fires, but the transcription is empty --
 # because macOS TCC microphone consent has no dialog to click in headless
 # CI, and Accessibility permission for keystroke injection may not be
-# pre-granted on macos-14 runners either. Treat a blank/no transcription
+# pre-granted on the hosted macOS runners either. Treat a blank/no transcription
 # on the first run as "permissions gate", not "routing bug", until both
 # are confirmed granted.
 

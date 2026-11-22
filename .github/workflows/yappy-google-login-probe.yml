@@ -76,9 +76,10 @@ name: yappy-google-login-probe
 # `screencapture` call in a job triggers an unclickable system consent
 # dialog (see README's "macos-26 is currently unusable..." section) --
 # there is no way to even get a valid screenshot to check this workflow's
-# actual behavior on macos-26 right now. Staying on `macos-14` for both
-# reasons (this closure, and the screencapture regression) until one of
-# them changes.
+# actual behavior on macos-26 right now. Moved to `macos-15` on 2026-11-22
+# instead: macos-14 is deprecated, and example.yml on macos-15 showed no
+# screencapture consent dialog. The login findings above were observed on
+# macos-14 and have not been re-run on macos-15.
 
 on:
   workflow_dispatch:
