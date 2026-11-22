@@ -33,7 +33,7 @@ run against your actual target and fix what breaks.
     launch-target: ''          # not needed for macOS dmg -- the .app is discovered automatically
     interact-script: ''        # optional, best-effort, allowed to fail
     settle-seconds: '5'
-- uses: actions/upload-artifact@v4   # already done internally, screenshots land in
+- uses: actions/upload-artifact@v7   # already done internally, screenshots land in
                                        # `gui-probe-screenshots-<os>`
 ```
 
